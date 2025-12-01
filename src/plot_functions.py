@@ -416,3 +416,32 @@ def plot_cluster_calendars_as_subplots(df_daily, start_year, start_month, end_ye
     fig.legend(handles=handles, bbox_to_anchor=(1.05, 1), loc='upper center',title='Clusters')
     plt.tight_layout()
     plt.show()
+
+
+def create_typical_days_per_cluster(df_global, df_cluster, cluster_col='cluster'):
+    # Fusionner les DataFrames
+    df = pd.merge(df_global, df_cluster[['date_only', cluster_col]], on='date_only', how='left')
+    # Convertir la colonne 'date' en datetime
+    df['datetime'] = pd.to_datetime(df['date'])
+    # Extraire l'heure et la minute sous forme de chaîne (ex: "08:00")
+    df['time_str'] = df['datetime'].dt.strftime('%H:%M')
+    # Calculer la moyenne du flux pour chaque minute et chaque cluster
+    df_typical_days = df.groupby(['time_str', cluster_col])['Flow'].mean().reset_index()
+    return df_typical_days
+
+def plot_typical_days_per_cluster(df_typical_days, cluster_colors, cluster_col='cluster', flow_col='Flow'):
+    plt.figure(figsize=(16, 8))
+    sns.lineplot(
+        data=df_typical_days,
+        x='time_str',
+        y=flow_col,
+        hue=cluster_col,
+        palette=cluster_colors
+    )
+    plt.xlabel('Heure de la journée (HH:MM)')
+    plt.ylabel('Flux moyen')
+    plt.title('Journées types par cluster (granularité minute)')
+    plt.xticks(rotation=90)  # Rotation pour éviter le chevauchement
+    plt.grid()
+    plt.tight_layout()  # Ajuste automatiquement l'espace
+    plt.show()
