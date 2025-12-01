@@ -1,11 +1,11 @@
 from pathlib import Path
 import pandas as pd
 import geopandas as gpd
-FOLDER_PATH = './'
+FOLDER_PATH = '../'
 
 agg = "15min"  
 modes = ["subway", "tramway", "bus"]
-base = Path(FOLDER_PATH) / "validation_individuelle"
+base = Path(FOLDER_PATH) / "data"
 
 dfs = {}  # mode -> DataFrame
 
