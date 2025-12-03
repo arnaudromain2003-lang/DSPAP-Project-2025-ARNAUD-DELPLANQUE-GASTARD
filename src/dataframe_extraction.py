@@ -20,26 +20,19 @@ for mode in ['subway','tramway','bus']:
         df.index = pd.to_datetime(df.index)
     dfs[mode] = df
     
+df_bus = dfs["bus"]
+df_tramway = dfs["tramway"]
+df_subway = dfs["subway"]
+
 # Load reference data for bus and tramway stops
-
-ref_subway = pd.read_csv(f"{base}/ref_subway.csv",index_col = 0).rename(columns = {'MEAN_X' : 'lon','MEAN_Y':'lat'})
-ref_tram_bus = pd.read_csv(f"{base}/ref_tram_bus.csv",index_col = 0).rename(columns = {'IDT_PNT' : 'VAL_ARRET_CODE','COO_X_WGS84':'lon','COO_Y_WGS84':'lat'})
-
-ref_tram_bus = ref_tram_bus[['lon','lat','NOM_PNT','VAL_ARRET_CODE']]
-# ref_subway = ref_subway[['lon','lat','COD_TRG','LIB_STA_SIFO']] a verifier
-
-df_bus = dfs["bus"].merge(ref_tram_bus, how = 'inner', on = 'VAL_ARRET_CODE')  
-df_tramway = dfs["tramway"].merge(ref_tram_bus, how = 'inner', on = 'VAL_ARRET_CODE')
-
 df_bus["date"]=pd.to_datetime(df_bus["VAL_DATE"])
 df_tramway["date"]=pd.to_datetime(df_tramway["VAL_DATE"])
+df_subway["date"]=pd.to_datetime(df_subway["VAL_DATE"])
 
 df_bus["date_only"] = df_bus["VAL_DATE"].dt.date
 df_tramway["date_only"] = df_tramway["VAL_DATE"].dt.date
+df_subway["date_only"] = df_subway["VAL_DATE"].dt.date
 
-# Proposition de correction car ce qui nous intersse c est le timestamp ainsi que val_date et flow:
-
-df_subway=dfs["subway"])
 df_subway['Flow']=dfs["subway"].sum(axis=1)
 
 df_bus=pd.DataFrame(df_bus, columns=['VAL_DATE', 'Flow'])
