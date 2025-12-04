@@ -15,25 +15,30 @@ from sklearn.preprocessing import StandardScaler
 
 
 # Creation of function to plot sum of validations
-def plot_validations(df_filtered_tram, df_filtered_bus):
-    # Visualiser le nombre de validations par jour pour le tramway sans la période COVID
+def plot_validations(df_filtered_tram, df_filtered_bus, df_filtered_subway):
     df_filtered_tram.groupby(['date'])['Flow'].sum().plot(figsize = (15,5), title = 'Number of validations per day for tramway', xlabel = 'Date', ylabel = 'Number of validations')
     plt.show()
-    # Visualiser le nombre de validations par jour pour le bus sans la période COVID
     df_filtered_bus.groupby(['date'])['Flow'].sum().plot(figsize = (15,5), title = 'Number of validations per day for bus', xlabel = 'Date', ylabel = 'Number of validations')
     plt.show()
-
+    df_filtered_subway.groupby(['date'])['Flow'].sum().plot(figsize = (15,5), title = 'Number of validations per day for subway', xlabel = 'Date', ylabel = 'Number of validations')
+    plt.show()
+    
 # Creation of function to plot week data
-def plot_week_data(df_tram, df_bus, week_nbr, color=True, superpose=True):
+def plot_week_data(df_tram, df_bus, df_subway, week_nbr, color=True, superpose=True):
     # Création des filtres pour obtenir la semaine souhaitée
     filter_week_tram = (df_tram['date'].dt.isocalendar().week == week_nbr)
     filter_week_bus = (df_bus['date'].dt.isocalendar().week == week_nbr)
+    filter_week_subway = (df_subway['date'].dt.isocalendar().week == week_nbr)
 
     # Filtrer les dataframes pour la semaine souhaitée
     df_week_tram = df_tram[filter_week_tram].copy()
     df_week_bus = df_bus[filter_week_bus].copy()
+    df_week_subway = df_subway[filter_week_subway].copy()
+
     df_week_tram['jour'] = df_week_tram['date'].dt.day_name()
     df_week_bus['jour'] = df_week_bus['date'].dt.day_name()
+    df_week_subway['jour'] = df_week_subway['date'].dt.day_name()
+
 
     # Définir une palette de couleurs (une couleur par jour)
     couleurs = {
@@ -47,13 +52,16 @@ def plot_week_data(df_tram, df_bus, week_nbr, color=True, superpose=True):
     }
 
     if (not color) & (not superpose):  # On affiche chaque jour avec la même couleur
-        return plot_validations(df_week_tram, df_week_bus)
+        return plot_validations(df_week_tram, df_week_bus, df_week_subway)
 
     elif color & superpose: # On affiche chaque jour l'un sur l'autre tout en gardant un plot pour le bus et un pour le tram
         df_week_bus['hour'] = df_week_bus['date'].dt.hour + df_week_bus['date'].dt.minute / 60
         df_plot_bus = df_week_bus.groupby(['hour', 'jour'])['Flow'].sum().reset_index()
         df_week_tram['hour'] = df_week_tram['date'].dt.hour + df_week_tram['date'].dt.minute / 60
         df_plot_tram = df_week_tram.groupby(['hour', 'jour'])['Flow'].sum().reset_index()
+        df_week_subway['hour'] = df_week_subway['date'].dt.hour + df_week_subway['date'].dt.minute / 60
+        df_plot_subway = df_week_subway.groupby(['hour', 'jour'])['Flow'].sum().reset_index()
+
 
         # Tracer avec Seaborn pour les tram
         plt.figure(figsize=(15, 8))
@@ -76,9 +84,22 @@ def plot_week_data(df_tram, df_bus, week_nbr, color=True, superpose=True):
         plt.xticks(range(0, 24))  # Afficher les heures de 0 à 23
         plt.show()
         
+        # Tracer avec Seaborn pour le métro
+        plt.figure(figsize=(15, 8))
+        sns.lineplot(data=df_plot_subway, x='hour', y='Flow', hue='jour', palette=couleurs, legend='full')
+
+        plt.title(f"Nombre de validations par heure pour chaque jour de la semaine n°{week_nbr} pour le métro")
+        plt.xlabel("Heure de la journée")
+        plt.ylabel("Nombre de validations")
+        plt.legend(title='Jour')
+        plt.xticks(range(0, 24))  # Afficher les heures de 0 à 23
+        plt.show()
+        
     elif color & (not superpose):
         df_daily_bus = df_week_bus.groupby(['date', 'jour'])['Flow'].sum().reset_index()
         df_daily_tram = df_week_tram.groupby(['date', 'jour'])['Flow'].sum().reset_index()
+        df_daily_subway = df_week_subway.groupby(['date', 'jour'])['Flow'].sum().reset_index()
+        
 
         # Tracer avec Seaborn pour les bus
         plt.figure(figsize=(15, 5))
@@ -95,26 +116,38 @@ def plot_week_data(df_tram, df_bus, week_nbr, color=True, superpose=True):
         plt.xlabel('Date')
         plt.ylabel('Number of validations')
         plt.show()
+        
+        # Tracer avec Seaborn pour le metro
+        plt.figure(figsize=(15, 5))
+        sns.lineplot(data=df_daily_subway, x='date', y='Flow', hue='jour', palette=couleurs)
+        plt.title(f'Number of validations per day for tramway (Week {week_nbr} of 2020)')
+        plt.xlabel('Date')
+        plt.ylabel('Number of validations')
+        plt.show()        
 
     else:
         return "Invalid combination of parameters. Please set superpose to True if color is True."
 
 # Function to plot a day
-def plot_day_data(df_tram, df_bus, date_str):
+def plot_day_data(df_tram, df_bus, df_subway, date_str):
     # Convertir la chaîne de caractères en objet datetime
     date = pd.to_datetime(date_str).date()
 
     # Filtrer les dataframes pour la date souhaitée
     df_day_tram = df_tram[df_tram['date_only'] == date].copy()
     df_day_bus = df_bus[df_bus['date_only'] == date].copy()
+    df_day_subway = df_subway[df_subway['date_only'] == date].copy()
 
     # Extraire l'heure et les minutes pour un tracé plus précis
     df_day_tram['hour'] = df_day_tram['date'].dt.hour + df_day_tram['date'].dt.minute / 60
     df_day_bus['hour'] = df_day_bus['date'].dt.hour + df_day_bus['date'].dt.minute / 60
+    df_day_subway['hour'] = df_day_subway['date'].dt.hour + df_day_subway['date'].dt.minute / 60
+
 
     # Grouper par heure pour obtenir le nombre total de validations par heure
     df_plot_tram = df_day_tram.groupby('hour')['Flow'].sum().reset_index()
     df_plot_bus = df_day_bus.groupby('hour')['Flow'].sum().reset_index()
+    df_plot_subway = df_day_subway.groupby('hour')['Flow'].sum().reset_index()
 
     # Tracer les validations pour le tramway
     plt.figure(figsize=(15, 5))
@@ -136,7 +169,17 @@ def plot_day_data(df_tram, df_bus, date_str):
     plt.grid()
     plt.show()
     
-def merge_dataframes(df_bus, df_tramway):
+    # Tracer les validations pour le metro
+    plt.figure(figsize=(15, 5))
+    plt.plot(df_day_subway['hour'], df_plot_subway['Flow'], marker='o', color='green')
+    plt.title(f'Number of validations per hour for metro on {date_str}')
+    plt.xlabel('Hour of the day')
+    plt.ylabel('Number of validations')
+    plt.xticks(range(0, 24))  # Afficher les heures de 0 à 23
+    plt.grid()
+    plt.show()
+    
+def merge_dataframes(df_bus, df_tramway, df_subway):
     """Fusionne les dataframes de bus et de tramway en un seul dataframe global.
     Args:
         df_bus (pd.DataFrame): dataframe contenant les données de flow des bus
@@ -146,9 +189,13 @@ def merge_dataframes(df_bus, df_tramway):
     """
     df_bus = df_bus.copy()
     df_tramway = df_tramway.copy()
+    df_subway = df_subway.copy()
     df_bus['Transport_Type'] = 'Bus'
     df_tramway['Transport_Type'] = 'Tram'
-    df_global = pd.concat([df_bus, df_tramway], ignore_index=True)
+    df_subway['Transport_Type'] = 'Subway'
+
+
+    df_global = pd.concat([df_bus, df_tramway, df_subway], ignore_index=True)
     return df_global
 
 def give_time_period(df):
@@ -239,29 +286,39 @@ def cluster_kmeans_days(df, n_clusters=3, date_limit='2020-03-16'):
     df_daily['cluster'] = kmeans.fit_predict(df_daily[['flow_normalized']])
     return df_daily
 
-def plot_cluster(df_daily, cluster_column = "cluster", flow_column="Flow", cmap=["#ff7700", '#2ca02c', '#d62728', '#9467bd']):
+import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
+import seaborn as sns
+import pandas as pd
+
+def plot_cluster(df_daily, cluster_color, cluster_column="cluster", flow_column="Flow"):
+    n_clusters = len(df_daily[cluster_column].unique())
+    # Crée une ListedColormap à partir de cluster_color
+    cmap = ListedColormap(cluster_color)
     plt.figure(figsize=(12, 6))
-    plt.scatter(df_daily['date_only'], df_daily[flow_column], c=df_daily[cluster_column], cmap=ListedColormap(cmap))
+    plt.scatter(
+        df_daily['date_only'],
+        df_daily[flow_column],
+        c=df_daily[cluster_column],
+        cmap=cmap,
+        vmin=0,
+        vmax=n_clusters-1
+    )
     plt.xlabel('Date')
     plt.ylabel('Flow')
     plt.title('Clusters de jours par flow de transport')
+    plt.legend(title='Cluster', handles=[
+        plt.Line2D([0], [0], marker='o', color='w', label=f'Cluster {i}',
+                  markerfacecolor=cluster_color[i], markersize=10)
+        for i in range(n_clusters)
+    ])
     plt.show()
 
-
-
-def plot_cluster_distribution(df_daily, cluster_color = ["#ff7700", '#2ca02c', '#d62728', '#9467bd']):
-    df=df_daily.copy()
-    df["day_of_week"]=pd.to_datetime(df['date_only']).dt.day_name()
-
-    # Définir l'ordre des jours
+def plot_cluster_distribution(df_daily, cluster_color=["#ff7700", '#2ca02c', '#d62728', '#9467bd']):
+    df = df_daily.copy()
+    df["day_of_week"] = pd.to_datetime(df['date_only']).dt.day_name()
     jours_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-
-    # Convertir la colonne en type Categorical avec l'ordre spécifié
-    df['day_of_week'] = pd.Categorical(
-        df['day_of_week'],
-        categories=jours_order,
-        ordered=True
-    )
+    df['day_of_week'] = pd.Categorical(df['day_of_week'], categories=jours_order, ordered=True)
     plt.figure(figsize=(12, 6))
     sns.countplot(
         data=df,
@@ -424,24 +481,37 @@ def create_typical_days_per_cluster(df_global, df_cluster, cluster_col='cluster'
     # Convertir la colonne 'date' en datetime
     df['datetime'] = pd.to_datetime(df['date'])
     # Extraire l'heure et la minute sous forme de chaîne (ex: "08:00")
-    df['time_str'] = df['datetime'].dt.strftime('%H:%M')
-    # Calculer la moyenne du flux pour chaque minute et chaque cluster
-    df_typical_days = df.groupby(['time_str', cluster_col])['Flow'].mean().reset_index()
+    df['time'] = df['datetime'].dt.time
+    # Calculer la somme du flux pour chaque minute et chaque cluster
+    df_typical_days = df.groupby(['time', cluster_col])['Flow'].sum().reset_index()
+    # Normaliser par le nombre de jours de cluster ayant une valeur pour cet instant
+    normalize_table = df[['time', cluster_col]].value_counts()
+    df_typical_days['Flow'] = df_typical_days.apply(
+        lambda row: row['Flow'] / normalize_table[(row['time'], row[cluster_col])],
+        axis=1
+    )
     return df_typical_days
 
 def plot_typical_days_per_cluster(df_typical_days, cluster_colors, cluster_col='cluster', flow_col='Flow'):
+    # Convertir l'heure en format numérique pour le tracé
+    df_typical_days['time_numeric'] = df_typical_days['time'].apply(
+    lambda t: t.hour + t.minute/60
+    )
+
+    # Tracé
     plt.figure(figsize=(16, 8))
     sns.lineplot(
         data=df_typical_days,
-        x='time_str',
-        y=flow_col,
-        hue=cluster_col,
+        x='time_numeric',
+        y='Flow',
+        hue='cluster',
         palette=cluster_colors
     )
-    plt.xlabel('Heure de la journée (HH:MM)')
+    plt.xlabel('Heure de la journée (heures décimales)')
     plt.ylabel('Flux moyen')
     plt.title('Journées types par cluster (granularité minute)')
-    plt.xticks(rotation=90)  # Rotation pour éviter le chevauchement
+    plt.xticks(range(0, 24))
     plt.grid()
-    plt.tight_layout()  # Ajuste automatiquement l'espace
+    plt.tight_layout()
     plt.show()
+
