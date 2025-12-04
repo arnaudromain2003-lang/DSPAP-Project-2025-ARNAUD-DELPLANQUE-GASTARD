@@ -14,7 +14,7 @@ from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
 
-def plot_validations(df_tuple, title="Weekly/hourly validations"):
+def plot_validations(df_tuple, title="Weekly / hourly validations"):
     """
     Plot grouped daily validations for multiple DataFrames.
     dfs must be a tuple or list of DataFrames.
@@ -84,7 +84,7 @@ def plot_week(df_tuple, week_nbr, color=True, superpose=True):
         axes = [axes]
 
     fig.suptitle(
-        f"Weekly / hourly validations — Week {week_nbr}",
+        f"Weekly / hourly validations Week {week_nbr}",
         fontsize=18, fontweight="bold", y=1.05
     )
 
@@ -200,7 +200,7 @@ def plot_day(df_tuple, date_str):
         axes = [axes]
 
     fig.suptitle(
-        f"Hourly validations — {date_str}",
+        f"Hourly validations - {date_str}",
         fontsize=18,
         fontweight="bold",
         y=1.05
