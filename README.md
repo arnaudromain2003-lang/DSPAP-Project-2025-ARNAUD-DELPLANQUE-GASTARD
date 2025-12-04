@@ -23,6 +23,10 @@
 > **Authors: Romain Arnaud – Maxime Delplanque – Étienne Gastard**
 
 
+ **Please extract data.zip directly into the data/ folder, making sure the extraction does not create a data/data/ subfolder. All files from the archive must end up directly inside data/.** 
+ **https://filesender.renater.fr/?s=download&token=5eb5f9a4-64fc-4284-a772-481826a88f17**
+
+
 ### Installation guide
 
 ```git clone https://github.com/arnaudromain2003-lang/DSPAP-Project-2025-ARNAUD-DELPLANQUE-GASTARD.git
@@ -47,6 +51,7 @@ We use three datasets from the Public Transport Validation Dataset (1 Nov 2019 t
 - tramway_indiv_15min.csv
 - subway_indiv_15min.csv (station-level flows)
 
+**Please extract data.zip directly into the data/ folder, making sure the extraction does not create a data/data/ subfolder. All files from the archive must end up directly inside data/.**
 
 ### Essential variables:
 - VAL_DATE (timestamp, 15-min resolution)
@@ -92,7 +97,9 @@ DSPAP-Project (or your folder name)
     ├── filters.py          # Module used to define pandas masks and to compute filtered dataframes
     └── df_operations,py    # Module to compute operations on pandas dataframes
 
-└── data/               # Local datasets (ignored by git)
+└── data/               # Local datasets (ignored by git)        
+
+ **Please extract data.zip directly into the data/ folder, making sure the extraction does not create a data/data/ subfolder. All files from the archive must end up directly inside data/.**
 
 requirements.txt        # pip environment
 environment.yml         # conda environment

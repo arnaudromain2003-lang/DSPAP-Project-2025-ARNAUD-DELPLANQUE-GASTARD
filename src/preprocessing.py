@@ -23,8 +23,6 @@ project_root = Path.cwd().parent  # → mon_projet/
 if str(project_root) not in sys.path:
     sys.path.append(str(project_root))
 
-
-
 # ============================================
 # Paths configuration
 # ============================================
