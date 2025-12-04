@@ -101,6 +101,5 @@ DSPAP-Project (or your folder name)
 
  **Please extract data.zip directly into the data/ folder, making sure the extraction does not create a data/data/ subfolder. All files from the archive must end up directly inside data/.**
 
-requirements.txt        # pip environment
-environment.yml         # conda environment
+requirements.txt        # pip & conda environments
 README.md               # Project documentation```
