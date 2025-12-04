@@ -213,24 +213,38 @@ def create_typical_days_per_cluster(df_global, df_cluster, cluster_col='cluster'
     # Convertir la colonne 'date' en datetime
     df['datetime'] = pd.to_datetime(df['date'])
     # Extraire l'heure et la minute sous forme de chaîne (ex: "08:00")
-    df['time_str'] = df['datetime'].dt.strftime('%H:%M')
-    # Calculer la moyenne du flux pour chaque minute et chaque cluster
-    df_typical_days = df.groupby(['time_str', cluster_col])['Flow'].mean().reset_index()
+    df['time'] = df['datetime'].dt.time
+    # Calculer la somme du flux pour chaque minute et chaque cluster
+    df_typical_days = df.groupby(['time', cluster_col])['Flow'].sum().reset_index()
+    # Normaliser par le nombre de jours de cluster ayant une valeur pour cet instant
+    normalize_table = df[['time', cluster_col]].value_counts()
+    df_typical_days['Flow'] = df_typical_days.apply(
+        lambda row: row['Flow'] / normalize_table[(row['time'], row[cluster_col])],
+        axis=1
+    )
     return df_typical_days
 
 def plot_typical_days_per_cluster(df_typical_days, cluster_colors, cluster_col='cluster', flow_col='Flow'):
+    # Convertir l'heure en format numérique pour le tracé
+    df_typical_days['time_numeric'] = df_typical_days['time'].apply(
+    lambda t: t.hour + t.minute/60
+    )
+
+    # Tracé
     plt.figure(figsize=(16, 8))
     sns.lineplot(
         data=df_typical_days,
-        x='time_str',
-        y=flow_col,
-        hue=cluster_col,
+        x='time_numeric',
+        y='Flow',
+        hue='cluster',
         palette=cluster_colors
     )
-    plt.xlabel('Heure de la journée (HH:MM)')
+    plt.xlabel('Heure de la journée (heures décimales)')
     plt.ylabel('Flux moyen')
     plt.title('Journées types par cluster (granularité minute)')
-    plt.xticks(rotation=90)  # Rotation pour éviter le chevauchement
+    plt.xticks(range(0, 24))
     plt.grid()
-    plt.tight_layout()  # Ajuste automatiquement l'espace
+    plt.tight_layout()
     plt.show()
+
+
