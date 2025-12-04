@@ -23,6 +23,23 @@
 > **Authors: Romain Arnaud – Maxime Delplanque – Étienne Gastard**
 
 
+### Installation guide
+
+```git clone https://github.com/arnaudromain2003-lang/DSPAP-Project-2025-ARNAUD-DELPLANQUE-GASTARD.git
+
+# Clone the repository
+
+cd DSPAP-Project-2025 ('or any other folder name to contain our repository')
+
+# Installation of the environnment
+
+pip install -r requirements.txt
+
+# or
+
+conda env create -f dspap-ADG.yml
+conda activate dspap```
+
 ### Dataset
 
 We use three datasets from the Public Transport Validation Dataset (1 Nov 2019 to 30 Mar 2020):
@@ -74,8 +91,6 @@ DSPAP-Project (or your folder name)
     ├── plot.py             # Plot module
     ├── filters.py          # Module used to define pandas masks and to compute filtered dataframes
     └── df_operations,py    # Module to compute operations on pandas dataframes
-
-└── figures/            # Exported plots
 
 └── data/               # Local datasets (ignored by git)
 
