@@ -21,7 +21,7 @@ if str(project_root) not in sys.path:
 # ============================================
 # Paths configuration
 # ============================================
-DATA_ROOT = project_root / "data" / "PT" / "pt_data"
+DATA_ROOT = project_root / "data" 
 AGG = "15min"
 MODES = ["bus","tramway","subway"]
 

@@ -167,7 +167,6 @@ def plot_cluster_calendars_as_subplots(df_daily, start_year, start_month, end_ye
             # Filtrer les données pour le mois/année en cours
             df_month = df_daily_index[(df_daily_index['year'] == year) & (df_daily_index['month'] == month)].copy()
             df_month["date_only"] = pd.to_datetime(df_month["date_only"]).dt.date
-            print(df_month.head())
             # Créer une matrice pour le calendrier
             cal = calendar.monthcalendar(year, month)
             n_weeks = len(cal)
@@ -176,7 +175,6 @@ def plot_cluster_calendars_as_subplots(df_daily, start_year, start_month, end_ye
             # Remplir la matrice avec les clusters
             for day in range(1, calendar.monthrange(year, month)[1] + 1):
                 date = pd.to_datetime(pd.Timestamp(year=year, month=month, day=day)).date()
-                print(day, date, date in df_month.date_only.values)
                 if date in df_month.date_only.values:
                     week_idx = next(i for i, week in enumerate(cal) if day in week)
                     day_idx = date.weekday()  # 0=Lundi, 6=Dimanche
@@ -208,21 +206,31 @@ def plot_cluster_calendars_as_subplots(df_daily, start_year, start_month, end_ye
 
 
 def create_typical_days_per_cluster(df_global, df_cluster, cluster_col='cluster'):
-    # Fusionner les DataFrames
-    df = pd.merge(df_global, df_cluster[['date_only', cluster_col]], on='date_only', how='left')
-    # Convertir la colonne 'date' en datetime
-    df['datetime'] = pd.to_datetime(df['date'])
-    # Extraire l'heure et la minute sous forme de chaîne (ex: "08:00")
-    df['time'] = df['datetime'].dt.time
-    # Calculer la somme du flux pour chaque minute et chaque cluster
-    df_typical_days = df.groupby(['time', cluster_col])['Flow'].sum().reset_index()
-    # Normaliser par le nombre de jours de cluster ayant une valeur pour cet instant
-    normalize_table = df[['time', cluster_col]].value_counts()
-    df_typical_days['Flow'] = df_typical_days.apply(
-        lambda row: row['Flow'] / normalize_table[(row['time'], row[cluster_col])],
-        axis=1
+    # 1. Fusion des données
+    df = pd.merge(df_global, df_cluster[['date_only', 'cluster']], on='date_only', how='left')[["date","Flow","cluster"]]
+    df["time"] = pd.to_datetime(df['date']).dt.time
+    df["date_only"] = pd.to_datetime(df["date"]).dt.date
+
+    # 2. Agrégation
+    df_test = df.groupby("date").agg({'Flow': 'sum'}).reset_index()
+
+    # 3. Conversion des dates
+    df_test['date_only'] = pd.to_datetime(df_test['date']).dt.date
+    df_cluster['date_only'] = pd.to_datetime(df_cluster['date_only']).dt.date
+
+    # 4. Fusion avec df_cluster
+    df_average = pd.merge(
+        df_test,
+        df_cluster[['date_only', 'cluster']],
+        on='date_only',
+        how='left'  # ou 'inner' si vous voulez exclure les dates sans cluster
     )
-    return df_typical_days
+
+    # 5. Gestion des valeurs manquantes (si how='left')
+    df_average = df_average.dropna(subset=['cluster'])  # ou .fillna()
+    df_average["time"] = pd.to_datetime(df_average['date']).dt.time
+    return df_average
+
 
 def plot_typical_days_per_cluster(df_typical_days, cluster_colors, cluster_col='cluster', flow_col='Flow'):
     # Convertir l'heure en format numérique pour le tracé
