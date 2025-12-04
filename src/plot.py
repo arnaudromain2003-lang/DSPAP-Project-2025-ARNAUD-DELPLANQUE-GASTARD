@@ -229,68 +229,6 @@ def plot_day(df_tuple, date_str):
     plt.show()
 
 
-# def plot_day_variation_non_normalized(df_g):
-#     """
-#     Scatter plot : daily total flow per weekday, colored by Time_Period.
-#     """
-
-#     # Always work on a copy to avoid SettingWithCopyWarning
-#     df = df_g.copy()
-
-#     # Ensure datetime type
-#     df['date'] = pd.to_datetime(df['date'])
-
-#     # Create clean columns
-#     df['date_only'] = df['date'].dt.normalize()        # ← évite les "date != date" bugs
-#     df['jour_num'] = df['date'].dt.dayofweek
-#     df['jour_semaine'] = df['date'].dt.day_name()
-
-#     # Group by day + period
-#     df_daily = (
-#         df.groupby(['date_only', 'jour_num', 'jour_semaine', 'Time_Period'])['Flow']
-#           .sum()
-#           .reset_index()
-#     )
-
-#     # Color map by period
-#     period_colors = {
-#         "Regular week": "blue",
-#         "Winter holidays": "red",
-#         "Christmas holidays": "green",
-#         "COVID period": "purple",
-#         "Fête des Lumières": "orange"
-#     }
-
-#     plt.figure(figsize=(14, 6))
-
-#     # Plot each period separately
-#     for period, color in period_colors.items():
-#         subset = df_daily[df_daily['Time_Period'] == period]
-
-#         plt.scatter(
-#             subset['jour_num'],
-#             subset['Flow'],
-#             c=color,
-#             label=period,
-#             alpha=0.7,
-#             s=50
-#         )
-
-#     plt.xticks(
-#         ticks=range(7),
-#         labels=["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
-#     )
-#     plt.xlabel('Jour de la semaine')
-#     plt.ylabel('Flux total journalier')
-#     plt.title('Flux journalier par jour de la semaine et période')
-#     plt.legend(title='Période')
-#     plt.grid(True)
-
-#     plt.show()
-
-
-
-
 def plot_day_variation(df_tuple, normalize=False):
     """
     Affiche autant de subplots que de DataFrames.
@@ -376,11 +314,5 @@ def plot_day_variation(df_tuple, normalize=False):
 
     plt.tight_layout()
     plt.show()
-
-
-
-
-
-
 
 # End of src/plot.py
