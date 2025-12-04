@@ -1,3 +1,10 @@
+    """
+    df_operations module: functions for DataFrame operations.
+    - Merging multiple transport DataFrames into a single global dataset.
+    - Adding a week regularity feature to indicate special periods.
+    """
+
+
 import pandas as pd
 
 def merge_dataframes(df_tuple):

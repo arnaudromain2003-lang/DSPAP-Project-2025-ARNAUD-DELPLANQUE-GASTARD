@@ -1,4 +1,9 @@
-# Clustering des jours selon le flow de transport
+"""
+clustering module: functions for clustering days based on transport flow.
+"""
+
+
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,6 +18,16 @@ colors = ['#1f77b4', "#ff7700", '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e3
 
 
 def cluster_kmeans_days(df, n_clusters=3, date_limit='2020-03-16'):
+    """Cluster days based on transport flow using KMeans.
+
+    Args:
+        df (pd.DataFrame): DataFrame with 'date' and 'Flow' columns.
+        n_clusters (int, optional): Number of clusters. Defaults to 3.
+        date_limit (str, optional): Date limit for filtering data. Defaults to '2020-03-16'.
+
+    Returns:
+        pd.DataFrame: DataFrame with daily flow and cluster labels.
+    """
     # Charger les données
     df_daily = df.copy()
     df_daily["date_only"] = df_daily["date"].dt.date
@@ -29,6 +44,14 @@ def cluster_kmeans_days(df, n_clusters=3, date_limit='2020-03-16'):
     return df_daily
 
 def plot_cluster(df_daily, cluster_column = "cluster", flow_column="Flow", cmap=["#ff7700", '#2ca02c', '#d62728', '#9467bd']):
+    """Plot clusters of days based on transport flow.
+
+    Args:
+        df_daily (pd.DataFrame): DataFrame with daily flow and cluster labels.
+        cluster_column (str, optional): Name of the column containing cluster labels. Defaults to "cluster".
+        flow_column (str, optional): Name of the column containing flow values. Defaults to "Flow".
+        cmap (list, optional): List of colors for clusters. Defaults to ["#ff7700", '#2ca02c', '#d62728', '#9467bd'].
+    """
     plt.figure(figsize=(12, 6))
     plt.scatter(df_daily['date_only'], df_daily[flow_column], c=df_daily[cluster_column], cmap=ListedColormap(cmap))
     plt.xlabel('Date')
@@ -37,8 +60,15 @@ def plot_cluster(df_daily, cluster_column = "cluster", flow_column="Flow", cmap=
     plt.show()
 
 
-
 def plot_cluster_distribution(df_daily, cluster_color = ["#ff7700", '#2ca02c', '#d62728', '#9467bd']):
+    """
+    Plot the distribution of clusters over the days of the week.
+    Args:
+        df_daily (pd.DataFrame): DataFrame with daily flow and cluster labels.
+        cluster_color (list, optional): List of colors for clusters. Defaults to ["#ff7700", '#2ca02c', '#d62728', '#9467bd'].
+    Returns:
+        A bar plot showing the count of days in each cluster for each day of the week.
+    """
     df=df_daily.copy()
     df["day_of_week"]=pd.to_datetime(df['date_only']).dt.day_name()
 
@@ -68,6 +98,19 @@ def plot_cluster_distribution(df_daily, cluster_color = ["#ff7700", '#2ca02c', '
 
 
 def plot_cluster_calendar(df_daily, year, month, cluster_col='cluster', cluster_colors = ['#1f77b4', "#ff7700", '#2ca02c', '#d62728', '#9467bd']):
+    """Plot a calendar view of clusters for a given month and year.
+
+    Args:
+        df_daily (pd.DataFrame): Daily DataFrame with daily flow and cluster labels.
+        year (int): Year for the calendar view.
+        month (int): Month for the calendar view.
+        cluster_col (str, optional): Name of the column containing cluster labels. Defaults to 'cluster'.
+        cluster_colors (list, optional): List of colors for clusters. Defaults to ['#1f77b4', "#ff7700", '#2ca02c', '#d62728', '#9467bd'].
+    Raises:
+        ValueError: If the number of clusters exceeds the number of defined colors.
+    Returns:
+        A calendar plot showing the clusters for each day of the specified month and year.
+    """
     df_daily_index = df_daily.copy()
     df_daily_index["year"] = pd.to_datetime(df_daily_index["date_only"]).dt.year
     df_daily_index["month"] = pd.to_datetime(df_daily_index["date_only"]).dt.month
@@ -130,6 +173,21 @@ def plot_cluster_calendar(df_daily, year, month, cluster_col='cluster', cluster_
 
 
 def plot_cluster_calendars_as_subplots(df_daily, start_year, start_month, end_year, end_month, cluster_col='cluster', cluster_colors=['white', "#ff7700", '#2ca02c', '#d62728', '#9467bd']):
+    """
+    Plot multiple months as subplots in a calendar format, showing clusters for each day.
+    Args:
+        df_daily (pd.DataFrame): DataFrame with daily flow and cluster labels.
+        start_year (int): The starting year for the calendar plots.
+        start_month (int): The starting month for the calendar plots.
+        end_year (int): The ending year for the calendar plots.
+        end_month (int): The ending month for the calendar plots.
+        cluster_col (str, optional): The column name for cluster labels. Defaults to 'cluster'.
+        cluster_colors (list, optional): List of colors for clusters. Defaults to ['white', "#ff7700", '#2ca02c', '#d62728', '#9467bd'].
+    Raises:
+        ValueError: If the number of clusters exceeds the number of defined colors.
+    Returns:
+        A series of subplots showing calendars for each month in the specified range, colored by cluster.
+    """
     # Calculer le nombre total de mois à afficher
     n_months = (end_year - start_year) * 12 + (end_month - start_month + 1)
 
@@ -206,6 +264,17 @@ def plot_cluster_calendars_as_subplots(df_daily, start_year, start_month, end_ye
 
 
 def create_typical_days_per_cluster(df_global, df_cluster, cluster_col='cluster'):
+    """
+    Create typical days per cluster by merging global and cluster data, aggregating flow, and associating clusters.
+
+    Args:
+        df_global (pd.DataFrame): Global dataframe with flow data.
+        df_cluster (pd.DataFrame): Dataframe with cluster labels.
+        cluster_col (str, optional): The column name for cluster labels. Defaults to 'cluster'.
+
+    Returns:
+        pd.DataFrame: Dataframe with typical days per cluster.
+    """
     # 1. Fusion des données
     df = pd.merge(df_global, df_cluster[['date_only', 'cluster']], on='date_only', how='left')[["date","Flow","cluster"]]
     df["time"] = pd.to_datetime(df['date']).dt.time
@@ -233,6 +302,15 @@ def create_typical_days_per_cluster(df_global, df_cluster, cluster_col='cluster'
 
 
 def plot_typical_days_per_cluster(df_typical_days, cluster_colors, cluster_col='cluster', flow_col='Flow'):
+    """
+    Plot typical days per cluster using time in decimal hours and flow values.
+
+    Args:
+        df_typical_days (pd.DataFrame): Dataframe with typical days data.
+        cluster_colors (list): List of colors for clusters.
+        cluster_col (str, optional): The column name for cluster labels. Defaults to 'cluster'.
+        flow_col (str, optional): The column name for flow values. Defaults to 'Flow'.
+    """
     # Convertir l'heure en format numérique pour le tracé
     df_typical_days['time_numeric'] = df_typical_days['time'].apply(
     lambda t: t.hour + t.minute/60
@@ -254,5 +332,3 @@ def plot_typical_days_per_cluster(df_typical_days, cluster_colors, cluster_col='
     plt.grid()
     plt.tight_layout()
     plt.show()
-
-

@@ -1,3 +1,10 @@
+"""
+    preprocessing module: Load and preprocess transport datasets.
+    - Load datasets for bus, tramway, and subway modes.
+    - Extract relevant columns and ensure datetime formatting.
+"""
+
+
 # ============================================
 # Imports
 # ============================================
