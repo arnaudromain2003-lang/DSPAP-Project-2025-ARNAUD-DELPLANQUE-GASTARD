@@ -44,6 +44,11 @@ pip install -r requirements.txt
 conda env create -f dspap-ADG.yml
 conda activate dspap```
 
+### You can install the same environment as we used
+
+conda create --name monenv --file environment.txt
+pip install -r <(grep -A9999 "# Additional pip packages" environment.txt | tail -n +2)
+
 ### Dataset
 
 We use three datasets from the Public Transport Validation Dataset (1 Nov 2019 to 30 Mar 2020):
